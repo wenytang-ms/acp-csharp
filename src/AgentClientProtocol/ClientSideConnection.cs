@@ -109,7 +109,7 @@ public sealed class ClientSideConnection : IDisposable, IAcpAgent
             return new JsonRpcResponse
             {
                 Id = request.Id,
-                Result = JsonSerializer.SerializeToElement(response, AcpJsonSerializerContext.Default.Options.GetTypeInfo<TerminalOutputRequest>())
+                Result = JsonSerializer.SerializeToElement(response, AcpJsonSerializerContext.Default.Options.GetTypeInfo<TerminalOutputResponse>())
             };
         });
 
@@ -247,6 +247,16 @@ public sealed class ClientSideConnection : IDisposable, IAcpAgent
         return RequestAsync<SetSessionModelRequest, SetSessionModelResponse>(AgentMethods.SessionSetModel, request, cancellationToken);
     }
 
+    public ValueTask<ListSessionsResponse> ListSessionsAsync(ListSessionsRequest request, CancellationToken cancellationToken = default)
+    {
+        return RequestAsync<ListSessionsRequest, ListSessionsResponse>(AgentMethods.SessionList, request, cancellationToken);
+    }
+
+    public ValueTask<SetConfigOptionResponse> SetConfigOptionAsync(SetConfigOptionRequest request, CancellationToken cancellationToken = default)
+    {
+        return RequestAsync<SetConfigOptionRequest, SetConfigOptionResponse>(AgentMethods.SessionSetConfigOption, request, cancellationToken);
+    }
+
     public async ValueTask<JsonElement> ExtMethodAsync(string method, JsonElement request, CancellationToken cancellationToken = default)
     {
         var response = await endpoint.SendRequestAsync(new JsonRpcRequest
@@ -266,8 +276,7 @@ public sealed class ClientSideConnection : IDisposable, IAcpAgent
 
     public ValueTask ExtNotificationAsync(string method, JsonElement notification, CancellationToken cancellationToken = default)
     {
-        // writer.WriteLineAsync(notification.ToString());
-        return default;
+        return NotificationAsync(method, notification, cancellationToken);
     }
 
     public void Dispose()

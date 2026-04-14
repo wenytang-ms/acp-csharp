@@ -33,6 +33,8 @@ public class SessionUpdateJsonConverter : JsonConverter<SessionUpdate>
             "plan" => root.Deserialize<PlanSessionUpdate>(options),
             "available_commands_update" => root.Deserialize<AvailableCommandsUpdateSessionUpdate>(options),
             "current_mode_update" => root.Deserialize<CurrentModeUpdateSessionUpdate>(options),
+            "config_option_update" => root.Deserialize<ConfigOptionUpdateSessionUpdate>(options),
+            "session_info_update" => root.Deserialize<SessionInfoUpdateSessionUpdate>(options),
             _ => throw new JsonException($"Unknown SessionUpdate type: {type}")
         };
     }
@@ -155,4 +157,28 @@ public record CurrentModeUpdateSessionUpdate : SessionUpdate
 
     [JsonPropertyName("currentModeId")]
     public required string CurrentModeId { get; init; }
+}
+
+public record ConfigOptionUpdateSessionUpdate : SessionUpdate
+{
+    [JsonPropertyName("sessionUpdate")]
+    public override string Update => "config_option_update";
+
+    [JsonPropertyName("configOptions")]
+    public required SessionConfigOption[] ConfigOptions { get; init; }
+}
+
+public record SessionInfoUpdateSessionUpdate : SessionUpdate
+{
+    [JsonPropertyName("sessionUpdate")]
+    public override string Update => "session_info_update";
+
+    [JsonPropertyName("sessionId")]
+    public string? SessionId { get; init; }
+
+    [JsonPropertyName("title")]
+    public string? Title { get; init; }
+
+    [JsonPropertyName("_meta")]
+    public Dictionary<string, object>? Meta { get; init; }
 }

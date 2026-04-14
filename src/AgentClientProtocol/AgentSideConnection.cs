@@ -124,6 +124,36 @@ public sealed class AgentSideConnection : IDisposable
             };
         });
 
+        endpoint.SetRequestHandler(AgentMethods.SessionList, async (request, ct) =>
+        {
+            var listRequest = request.Params.HasValue
+                ? JsonSerializer.Deserialize(request.Params.Value, AcpJsonSerializerContext.Default.Options.GetTypeInfo<ListSessionsRequest>())!
+                : new ListSessionsRequest();
+
+            var response = await agent.ListSessionsAsync(listRequest, ct);
+
+            return new JsonRpcResponse
+            {
+                Id = request.Id,
+                Result = JsonSerializer.SerializeToElement(response, AcpJsonSerializerContext.Default.Options.GetTypeInfo<ListSessionsResponse>())
+            };
+        });
+
+        endpoint.SetRequestHandler(AgentMethods.SessionSetConfigOption, async (request, ct) =>
+        {
+            AcpException.ThrowIfParamIsNull(request.Params);
+
+            var response = await agent.SetConfigOptionAsync(JsonSerializer.Deserialize(
+                request.Params!.Value,
+                AcpJsonSerializerContext.Default.Options.GetTypeInfo<SetConfigOptionRequest>())!, ct);
+
+            return new JsonRpcResponse
+            {
+                Id = request.Id,
+                Result = JsonSerializer.SerializeToElement(response, AcpJsonSerializerContext.Default.Options.GetTypeInfo<SetConfigOptionResponse>())
+            };
+        });
+
         endpoint.SetNotificationHandler(AgentMethods.SessionCancel, async (notification, ct) =>
         {
             AcpException.ThrowIfParamIsNull(notification.Params);
